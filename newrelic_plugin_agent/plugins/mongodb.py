@@ -231,10 +231,17 @@ class MongoDB(base.Plugin):
         for database in db_names:
             db = client[database]
             try:
+                if 'admin_auth' in databases[database]:
+                    db.authenticate(self.config.get('admin_username'),
+                                    self.config.get('admin_password'),
+                                    source='admin')
+                else:
                 if 'username' in databases[database]:
                     db.authenticate(databases[database]['username'],
                                     databases[database].get('password'))
                 self.add_datapoints(database, db.command('dbStats'))
+                if 'admin_auth' in databases[database]:
+                    db.logout()
                 if 'username' in databases[database]:
                     db.logout()
             except errors.OperationFailure as error:
